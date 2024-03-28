@@ -1,0 +1,6 @@
+to do
+
+make stop button reset things
+meybe add reset button(differentiate stopping and resetting)
+make input, timer and button look nice
+add option to change background(with relative wave color change)
