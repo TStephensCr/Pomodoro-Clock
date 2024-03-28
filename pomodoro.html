@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pomodoro Study Timer</title>
+<style>
+  html, body {
+    margin: 0;
+    height: 100%;
+  }
+
+  body {
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    background-image: url("waterfall.gif");
+    background-size:cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
+
+  .main-content{
+    position: relative;
+    z-index: 10;
+  }
+
+  input[type=number] {
+		
+  }
+  
+  #wave-container{
+    position:fixed;
+    top:0;
+    left:0;
+    height:100%;
+    width:100%;
+    z-index: -1;
+  }
+
+  #whiteBox{
+    position:absolute;
+    top:100%;
+    left:0;
+    height:100%;
+    width:100%;
+    background-color:rgba(255,255,255,0.9);
+  }
+
+  .waves {
+  position:relative;
+  top:90%;
+  width: 100%;
+  height:100%;
+  margin-bottom:-7px; /*Fix for safari gap*/
+  min-height:0%;
+  max-height:10%;
+}
+
+.parallax > use {
+  animation: move-forever 25s cubic-bezier(.55,.5,.45,.5)     infinite;
+}
+.parallax > use:nth-child(1) {
+  animation-delay: -2s;
+  animation-duration: 7s;
+}
+.parallax > use:nth-child(2) {
+  animation-delay: -3s;
+  animation-duration: 10s;
+}
+.parallax > use:nth-child(3) {
+  animation-delay: -4s;
+  animation-duration: 13s;
+}
+.parallax > use:nth-child(4) {
+  animation-delay: -5s;
+  animation-duration: 20s;
+}
+@keyframes move-forever {
+  0% {
+   transform: translate3d(-90px,0,0);
+  }
+  100% { 
+    transform: translate3d(85px,0,0);
+  }
+}
+
+</style>
+</head>
+<body>
+
+  <div id="wave-container">
+    <svg id="wavesID" class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+    viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+    <defs>
+    <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+    </defs>
+    <g class="parallax">
+    <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.5" />
+    <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.3)" />
+    <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.1)" />
+    <use xlink:href="#gentle-wave" x="48" y="7" fill="rgba(255,255,255,0.7)" />
+    </g>
+    </svg>
+    <div id="whiteBox"></div>
+  </div>
+
+  <div id="main-content">
+    <div id="safeTimer">
+      <p id="safeTimerDisplay">00:00</p>
+      <input type="number" id="safeTimerInput" placeholder="0m"></input>
+      <button id="TimerButton" onClick="startOrStop()">Start Timer</button>
+    </div>
+  </div>
+
+  
+  <script>
+      let timer;
+      let timeLeft;
+      let isRunning = false;
+      let safeTimer = document.getElementById("safeTimer");
+      let safeTimerDisplay = document.getElementById("safeTimerDisplay");
+      let safeTimerInput = document.getElementById("safeTimerInput");
+      let TimerButton = document.getElementById("TimerButton");
+
+
+    function startOrStop() {
+      smoothChange("wavesID",90,0,(safeTimerInput.value*60000));
+      smoothChange("whiteBox",100,10,(safeTimerInput.value*60000));
+      if (isRunning) {
+        clearInterval(timer);
+        isRunning = false;
+        TimerButton.innerHTML = "Start Timer";
+      } else {
+        let time = safeTimerInput.value;
+        timeLeft = time * 60;
+        timer = setInterval(() => {
+          timeLeft--;
+          if (timeLeft <= 0) {
+            clearInterval(timer);
+            isRunning = false;
+            TimerButton.innerHTML = "Start Timer";
+          }
+          let minutes = Math.floor(timeLeft / 60);
+          let seconds = timeLeft % 60;
+          safeTimerDisplay.innerHTML = `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+        }, 1000);
+        isRunning = true;
+        TimerButton.innerHTML = "Stop Timer";
+      }
+    }
+
+    function smoothChange(element, startValue, endValue, duration) {
+      let startTime = null;
+
+      function updateValue(timestamp) {
+        if (!startTime) startTime = timestamp;
+        const elapsedTime = timestamp - startTime;
+        const progress = Math.min(elapsedTime / duration, 1); // Ensure progress does not exceed 1
+        const interpolatedValue = startValue + (endValue - startValue) * progress;      
+        document.getElementById(element).style.setProperty("top", `${interpolatedValue}%`);
+
+        if (elapsedTime < duration) {
+          // Continue updating until duration is reached
+          requestAnimationFrame(updateValue);
+        }
+      }
+
+      requestAnimationFrame(updateValue);
+    }
+
+
+
+
+
+
+    function updateWaves(timeLeft){
+      let time = safeTimerInput.value;
+      let progress = 100 - (timeLeft*100) / (time * 60);
+      if(progress > 10){
+        //document.getElementById("wavesID").style.setProperty("max-height", `${progress}%`)
+        let topSpace = 100 - progress;
+        document.getElementById("wavesID").style.setProperty("top", `${topSpace}%`)
+        console.log(progress)
+        if(progress > 5){
+          progress = progress - 10;
+          //document.getElementById("wavesID").style.setProperty("min-height", `${progress}%`)
+        }
+      }
+    }
+
+  </script>
+  
+  </body>
+  </html>
