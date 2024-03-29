@@ -30,10 +30,37 @@
     z-index: 10;
   }
 
+  /* Chrome, Safari, Edge, Opera */
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Firefox */
   input[type=number] {
-		
+    -moz-appearance: textfield;
+  }
+
+  input[type=number] {
+    outline: none;
+    background-color: transparent;
+		border: none;
+    border-bottom: 2px solid #000;
+    text-align: center;
+  }
+
+  #buttonsDiv{
+    display:flex;
+    justify-content:space-around;
+    margin-top: 10px;
   }
   
+  button{
+    cursor:pointer;
+  
+  }
+
   #wave-container{
     position:fixed;
     top:0;
@@ -113,8 +140,11 @@
   <div id="main-content">
     <div id="safeTimer">
       <p id="safeTimerDisplay">00:00</p>
-      <input type="number" id="safeTimerInput" placeholder="0m"></input>
-      <button id="TimerButton" onClick="startOrStop()">Start Timer</button>
+      <input type="number" id="safeTimerInput"></input>
+      <div id="buttonsDiv">
+        <button id="TimerButton" onClick="startOrStop()">Start Timer</button>
+        <button id="ResetButton" onClick="resetTimer()">Reset Timer</button>
+      </div>
     </div>
   </div>
 
@@ -123,76 +153,83 @@
       let timer;
       let timeLeft;
       let isRunning = false;
+      let initialTime; // Added to store initial time
       let safeTimer = document.getElementById("safeTimer");
       let safeTimerDisplay = document.getElementById("safeTimerDisplay");
       let safeTimerInput = document.getElementById("safeTimerInput");
       let TimerButton = document.getElementById("TimerButton");
+      let ResetButton = document.getElementById("ResetButton"); 
+      let wavesStart;
+      let stopAnimation = false;
 
-
-    function startOrStop() {
-      smoothChange("wavesID",90,0,(safeTimerInput.value*60000));
-      smoothChange("whiteBox",100,10,(safeTimerInput.value*60000));
-      if (isRunning) {
-        clearInterval(timer);
-        isRunning = false;
-        TimerButton.innerHTML = "Start Timer";
-      } else {
-        let time = safeTimerInput.value;
-        timeLeft = time * 60;
-        timer = setInterval(() => {
-          timeLeft--;
-          if (timeLeft <= 0) {
-            clearInterval(timer);
-            isRunning = false;
-            TimerButton.innerHTML = "Start Timer";
+      function startOrStop() {
+        if (isRunning) {
+          clearInterval(timer);
+          isRunning = false;
+          stopAnimation = true;
+          TimerButton.innerHTML = "Resume Timer";
+          wavesStart = parseFloat(document.getElementById("wavesID").style.top);
+        } else {
+          let time = safeTimerInput.value;
+          if (!initialTime) {
+            initialTime = time * 60;
+            timeLeft = initialTime; // Initialize timeLeft if it hasn't been set
+            wavesStart = 90;
+            wavesEnd = 0;
           }
-          let minutes = Math.floor(timeLeft / 60);
-          let seconds = timeLeft % 60;
-          safeTimerDisplay.innerHTML = `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
-        }, 1000);
-        isRunning = true;
-        TimerButton.innerHTML = "Stop Timer";
-      }
-    }
-
-    function smoothChange(element, startValue, endValue, duration) {
-      let startTime = null;
-
-      function updateValue(timestamp) {
-        if (!startTime) startTime = timestamp;
-        const elapsedTime = timestamp - startTime;
-        const progress = Math.min(elapsedTime / duration, 1); // Ensure progress does not exceed 1
-        const interpolatedValue = startValue + (endValue - startValue) * progress;      
-        document.getElementById(element).style.setProperty("top", `${interpolatedValue}%`);
-
-        if (elapsedTime < duration) {
-          // Continue updating until duration is reached
-          requestAnimationFrame(updateValue);
+          smoothChange("wavesID", wavesStart, 0, timeLeft * 1000); // Start animation
+          smoothChange("whiteBox", (wavesStart+10), 10, timeLeft * 1000); // Start animation
+          timer = setInterval(() => {
+            timeLeft--; // Decrement timeLeft on each interval
+            if (timeLeft <= 0) {
+              clearInterval(timer);
+              isRunning = false;
+              TimerButton.innerHTML = "Start Timer";
+            }
+            let minutes = Math.floor(timeLeft / 60);
+            let seconds = timeLeft % 60;
+            safeTimerDisplay.innerHTML = `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+          }, 1000);
+          isRunning = true;
+          TimerButton.innerHTML = "Pause Timer";
         }
       }
 
-      requestAnimationFrame(updateValue);
-    }
-
-
-
-
-
-
-    function updateWaves(timeLeft){
-      let time = safeTimerInput.value;
-      let progress = 100 - (timeLeft*100) / (time * 60);
-      if(progress > 10){
-        //document.getElementById("wavesID").style.setProperty("max-height", `${progress}%`)
-        let topSpace = 100 - progress;
-        document.getElementById("wavesID").style.setProperty("top", `${topSpace}%`)
-        console.log(progress)
-        if(progress > 5){
-          progress = progress - 10;
-          //document.getElementById("wavesID").style.setProperty("min-height", `${progress}%`)
-        }
+      function resetTimer() {
+        clearInterval(timer); // Stop the timer
+        timeLeft = initialTime; // Reset timeLeft to initialTime
+        isRunning = false;
+        stopAnimation = true;
+        TimerButton.innerHTML = "Start Timer"; // Reset button text
+        safeTimerDisplay.innerHTML = "00:00"; // Reset display
+        document.getElementById("wavesID").style.setProperty("top", `90%`);
+        document.getElementById("whiteBox").style.setProperty("top", `100%`);
+        initialTime = null; // Reset initialTime
       }
-    }
+
+      function smoothChange(element, startValue, endValue, duration) {
+        let startTime = null;
+        stopAnimation = false;
+        function updateValue(timestamp) {
+          if (!startTime) startTime = timestamp;
+          let elapsedTime = timestamp - startTime;
+          let progress = Math.min(elapsedTime / duration, 1); // Ensure progress does not exceed 1
+          let interpolatedValue = startValue + (endValue - startValue) * progress;
+          console.log("Start Value: ", startValue);
+          console.log("End Value: ", endValue);
+          console.log("Progress: ", progress);
+          console.log("Interpolated Value: ", interpolatedValue);
+          document.getElementById(element).style.setProperty("top", `${interpolatedValue}%`);
+          if (elapsedTime < duration && !stopAnimation) {
+            // Continue updating until duration is reached
+            console.log("Updating");
+            requestAnimationFrame(updateValue);
+          }
+        }
+
+        requestAnimationFrame(updateValue);
+        stopAnimation = false;
+      }
 
   </script>
   
