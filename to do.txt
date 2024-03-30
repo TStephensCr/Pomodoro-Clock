@@ -1,6 +1,17 @@
 to do
 
-make stop button reset things
-meybe add reset button(differentiate stopping and resetting)
 make input, timer and button look nice
 add option to change background(with relative wave color change)
+add js for break timer
+timer for pause and for study are different hues of same color scheme, relative to theme
+add quick animation for reset button(water going down)
+
+
+
+color to change in theme:
+background gif(obviously)
+waves
+clock display(differentiate work/break)
+input box borders
+input box text(differentiate input and placeholder)
+buttons

@@ -25,9 +25,19 @@
     background-attachment: fixed;
   }
 
-  .main-content{
+  #main-content{
+    top: 0;
+    text-align: center;
     position: relative;
     z-index: 10;
+  }
+
+  #safeTimerDisplay{
+    top:0%;
+    font-size: 7em;
+    margin: 0;
+    text-align: center;
+    color: #1f235d;
   }
 
   /* Chrome, Safari, Edge, Opera */
@@ -43,22 +53,34 @@
   }
 
   input[type=number] {
+    color: #1f235d;
+    width: 10%;
     outline: none;
     background-color: transparent;
 		border: none;
     border-bottom: 2px solid #000;
     text-align: center;
+    font-size: 2em;
+    margin-top:10%;
+    margin-bottom: 3%;
+  }
+
+  input::placeholder{
+    color: #1f235d;
   }
 
   #buttonsDiv{
     display:flex;
-    justify-content:space-around;
-    margin-top: 10px;
+    flex-direction:row;
+    justify-content: center;
   }
   
   button{
     cursor:pointer;
-  
+    margin: 0.5%;
+    padding: 1%;
+    background-color: #2b65a1;
+    box-shadow: 0 6px 6px rgba(0, 0, 0, 0.6);
   }
 
   #wave-container{
@@ -76,7 +98,7 @@
     left:0;
     height:100%;
     width:100%;
-    background-color:rgba(255,255,255,0.9);
+    background-color:rgba(35,181,211,0.9);
   }
 
   .waves {
@@ -128,19 +150,20 @@
     <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
     </defs>
     <g class="parallax">
-    <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.5" />
-    <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.3)" />
-    <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.1)" />
-    <use xlink:href="#gentle-wave" x="48" y="7" fill="rgba(255,255,255,0.7)" />
+    <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(35,181,211,0.5)" />
+    <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(35,181,211,0.3)" />
+    <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(35,181,211,0.1)" />
+    <use xlink:href="#gentle-wave" x="48" y="7" fill="rgba(35,181,211,0.7)" />
     </g>
     </svg>
     <div id="whiteBox"></div>
   </div>
 
   <div id="main-content">
+    <p id="safeTimerDisplay">00:00</p>
     <div id="safeTimer">
-      <p id="safeTimerDisplay">00:00</p>
-      <input type="number" id="safeTimerInput"></input>
+      <input type="number" id="safeTimerInputStudy" placeholder="work"></input>
+      <input type="number" id="safeTimerInputBreak" placeholder="break"></input>
       <div id="buttonsDiv">
         <button id="TimerButton" onClick="startOrStop()">Start Timer</button>
         <button id="ResetButton" onClick="resetTimer()">Reset Timer</button>
@@ -156,7 +179,7 @@
       let initialTime; // Added to store initial time
       let safeTimer = document.getElementById("safeTimer");
       let safeTimerDisplay = document.getElementById("safeTimerDisplay");
-      let safeTimerInput = document.getElementById("safeTimerInput");
+      let safeTimerInputStudy = document.getElementById("safeTimerInputStudy");
       let TimerButton = document.getElementById("TimerButton");
       let ResetButton = document.getElementById("ResetButton"); 
       let wavesStart;
@@ -170,7 +193,11 @@
           TimerButton.innerHTML = "Resume Timer";
           wavesStart = parseFloat(document.getElementById("wavesID").style.top);
         } else {
-          let time = safeTimerInput.value;
+          let time = safeTimerInputStudy.value.trim();
+          if(time == ''){
+            alert("Please enter a valid amount of time");
+            return;
+          }
           if (!initialTime) {
             initialTime = time * 60;
             timeLeft = initialTime; // Initialize timeLeft if it hasn't been set
