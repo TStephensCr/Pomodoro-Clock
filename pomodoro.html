@@ -23,6 +23,7 @@
     background-size:cover;
     background-repeat: no-repeat;
     background-attachment: fixed;
+    background-position: center center;
   }
 
   #main-content{
@@ -65,8 +66,20 @@
     margin-bottom: 3%;
   }
 
-  input::placeholder{
+  input[type=number]::placeholder{
+    color: #000331;
+  }
+
+  #safeTimerInputStudy{
     color: #1f235d;
+  }
+
+  #safeTimerInputBreak{
+    color: #2B65A1;
+  }
+
+  #safeTimerInputCicles{
+    color: #121538;
   }
 
   #buttonsDiv{
@@ -139,6 +152,26 @@
   }
 }
 
+#themeBox{
+  position:fixed;
+  top:0;
+  width:100%;
+  padding: 1%;
+  text-align: center;
+}
+
+input[type="radio"]{
+  opacity: 0;
+  width:0;
+  height:0;
+}
+
+.themeIcons{
+  width: 80px;
+  height: 45px;
+  cursor: pointer;
+}
+
 </style>
 </head>
 <body>
@@ -159,11 +192,31 @@
     <div id="whiteBox"></div>
   </div>
 
+  <div id="themeBox">
+    <label>
+    <input type="radio" id="themeWater" name="theme" value="themeWater" checked>
+    <img src="waterfall.gif" alt="Waterfall" class="themeIcons">
+    </label>
+    <label>
+    <input type="radio" id="themeDiner" name="theme" value="themeDiner" checked>
+    <img src="diner.gif" alt="Waterfall" class="themeIcons">
+    </label>
+    <label>
+    <input type="radio" id="themeSunset" name="theme" value="themeSunset" checked>
+    <img src="sunset.gif" alt="Waterfall" class="themeIcons">
+    </label>
+    <label>
+    <input type="radio" id="themeTechno" name="theme" value="themeTechno" checked>
+    <img src="techno.gif" alt="Waterfall" class="themeIcons">
+    </label>
+  </div>
+
   <div id="main-content">
     <p id="safeTimerDisplay">00:00</p>
     <div id="safeTimer">
       <input type="number" id="safeTimerInputStudy" placeholder="work"></input>
       <input type="number" id="safeTimerInputBreak" placeholder="break"></input>
+      <input type="number" id="safeTimerInputCicles" placeholder="cycles"></input>
       <div id="buttonsDiv">
         <button id="TimerButton" onClick="startOrStop()">Start Timer</button>
         <button id="ResetButton" onClick="resetTimer()">Reset Timer</button>
@@ -176,88 +229,211 @@
       let timer;
       let timeLeft;
       let isRunning = false;
-      let initialTime; // Added to store initial time
-      let safeTimer = document.getElementById("safeTimer");
+      let initialTime;
+      let currentTimerType = 'work'; // Indicates the current timer type ('work' or 'break')
+      let cycleCount = 1; // Default cycle count
+      let cycleNumberInput = document.getElementById("safeTimerInputCicles");
       let safeTimerDisplay = document.getElementById("safeTimerDisplay");
       let safeTimerInputStudy = document.getElementById("safeTimerInputStudy");
+      let safeTimerInputBreak = document.getElementById("safeTimerInputBreak");
       let TimerButton = document.getElementById("TimerButton");
-      let ResetButton = document.getElementById("ResetButton"); 
+      let ResetButton = document.getElementById("ResetButton");
       let wavesStart;
       let stopAnimation = false;
+      let workColor = "#1f235d";
+      let breakColor = "#2B65A1";
+      let redWave = 35;
+      let greenWave = 181;
+      let blueWave = 211;
 
       function startOrStop() {
         if (isRunning) {
-          clearInterval(timer);
-          isRunning = false;
-          stopAnimation = true;
-          TimerButton.innerHTML = "Resume Timer";
-          wavesStart = parseFloat(document.getElementById("wavesID").style.top);
+            clearInterval(timer);
+            isRunning = false;
+            stopAnimation = true;
+            TimerButton.innerHTML = "Resume Timer";
+            wavesStart = parseFloat(document.getElementById("wavesID").style.top);
         } else {
-          let time = safeTimerInputStudy.value.trim();
-          if(time == ''){
-            alert("Please enter a valid amount of time");
-            return;
-          }
-          if (!initialTime) {
-            initialTime = time * 60;
-            timeLeft = initialTime; // Initialize timeLeft if it hasn't been set
-            wavesStart = 90;
-            wavesEnd = 0;
-          }
-          smoothChange("wavesID", wavesStart, 0, timeLeft * 1000); // Start animation
-          smoothChange("whiteBox", (wavesStart+10), 10, timeLeft * 1000); // Start animation
-          timer = setInterval(() => {
-            timeLeft--; // Decrement timeLeft on each interval
-            if (timeLeft <= 0) {
-              clearInterval(timer);
-              isRunning = false;
-              TimerButton.innerHTML = "Start Timer";
+            let workTime = safeTimerInputStudy.value.trim();
+            let breakTime = safeTimerInputBreak.value.trim();
+            let cycles = parseInt(cycleNumberInput.value);
+
+            if (workTime === '' || breakTime === '' || isNaN(cycles) || cycles <= 0) {
+                alert("Please enter valid values for work time, break time, and number of cycles.");
+                return;
             }
-            let minutes = Math.floor(timeLeft / 60);
-            let seconds = timeLeft % 60;
-            safeTimerDisplay.innerHTML = `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+
+            if (!initialTime) {
+                initialTime = workTime * 60;
+                timeLeft = initialTime;
+                wavesStart = 90;
+                cycleCount = cycles;
+                currentTimerType = 'work';
+            }
+
+            if(currentTimerType == 'work'){
+              document.getElementById("safeTimerDisplay").style.color = workColor;
+              smoothChange("wavesID", wavesStart, 0, timeLeft * 1000);
+              smoothChange("whiteBox", (wavesStart + 10), 10, timeLeft * 1000);
+            }else{
+              document.getElementById("safeTimerDisplay").style.color = breakColor;
+              smoothChange("wavesID", 0, wavesStart, timeLeft * 1000);
+              smoothChange("whiteBox", 10, (wavesStart + 10), timeLeft * 1000);
+            }
+
+            timer = setInterval(() => {
+              timeLeft--;
+              if (timeLeft <= 0) {
+                  clearInterval(timer);
+                  isRunning = false;
+                  TimerButton.innerHTML = "Start Timer";
+                  if (currentTimerType === 'work') {
+                      cycleCount--;
+                      currentTimerType = 'break';
+                      timeLeft = breakTime * 60;
+                      initialTime = timeLeft;
+                      startOrStop(); // Start break timer automatically
+                  } else {
+                    if (cycleCount > 0) {
+                      currentTimerType = 'work';
+                      timeLeft = workTime * 60;
+                      initialTime = timeLeft;
+                      startOrStop(); // Start work timer automatically
+                    }
+                  }
+              }
+              let minutes = Math.floor(timeLeft / 60);
+              let seconds = timeLeft % 60;
+              safeTimerDisplay.innerHTML = `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
           }, 1000);
           isRunning = true;
           TimerButton.innerHTML = "Pause Timer";
-        }
       }
+  }
+
+
+      
 
       function resetTimer() {
-        clearInterval(timer); // Stop the timer
-        timeLeft = initialTime; // Reset timeLeft to initialTime
-        isRunning = false;
-        stopAnimation = true;
-        TimerButton.innerHTML = "Start Timer"; // Reset button text
-        safeTimerDisplay.innerHTML = "00:00"; // Reset display
-        document.getElementById("wavesID").style.setProperty("top", `90%`);
-        document.getElementById("whiteBox").style.setProperty("top", `100%`);
-        initialTime = null; // Reset initialTime
+          clearInterval(timer);
+          timeLeft = initialTime;
+          isRunning = false;
+          stopAnimation = true;
+          TimerButton.innerHTML = "Start Timer";
+          safeTimerDisplay.innerHTML = "00:00";
+          document.getElementById("wavesID").style.setProperty("top", `90%`);
+          document.getElementById("whiteBox").style.setProperty("top", `100%`);
+          initialTime = null;
+          currentTimerType = 'work';
+          cycleCount = 1;
+          document.getElementById("safeTimerDisplay").style.color = workColor;
       }
 
       function smoothChange(element, startValue, endValue, duration) {
-        let startTime = null;
-        stopAnimation = false;
-        function updateValue(timestamp) {
-          if (!startTime) startTime = timestamp;
-          let elapsedTime = timestamp - startTime;
-          let progress = Math.min(elapsedTime / duration, 1); // Ensure progress does not exceed 1
-          let interpolatedValue = startValue + (endValue - startValue) * progress;
-          console.log("Start Value: ", startValue);
-          console.log("End Value: ", endValue);
-          console.log("Progress: ", progress);
-          console.log("Interpolated Value: ", interpolatedValue);
-          document.getElementById(element).style.setProperty("top", `${interpolatedValue}%`);
-          if (elapsedTime < duration && !stopAnimation) {
-            // Continue updating until duration is reached
-            console.log("Updating");
-            requestAnimationFrame(updateValue);
+          let startTime = null;
+          stopAnimation = false;
+          function updateValue(timestamp) {
+              if (!startTime) startTime = timestamp;
+              let elapsedTime = timestamp - startTime;
+              let progress = Math.min(elapsedTime / duration, 1);
+              let interpolatedValue = startValue + (endValue - startValue) * progress;
+              document.getElementById(element).style.setProperty("top", `${interpolatedValue}%`);
+              if (elapsedTime < duration && !stopAnimation) {
+                  requestAnimationFrame(updateValue);
+              }
           }
-        }
-
-        requestAnimationFrame(updateValue);
-        stopAnimation = false;
+          requestAnimationFrame(updateValue);
+          stopAnimation = false;
       }
 
+      // Validate cycle input
+      cycleNumberInput.addEventListener('change', function() {
+          let cycles = parseInt(cycleNumberInput.value);
+          if (isNaN(cycles) || cycles <= 0) {
+              alert("Please enter a valid number of cycles (greater than 0).");
+              cycleNumberInput.value = 1;
+              cycleCount = 1;
+          } else {
+              cycleCount = cycles;
+          }
+      });
+
+      // Theme selection
+      const radioButtons = document.querySelectorAll('input[type="radio"][name="theme"]');
+
+      // Add event listener to each radio button
+      radioButtons.forEach(button => {
+        button.addEventListener('change', function(event) {
+          // Get the value of the selected radio button
+          const selectedValue = event.target.value;
+          themeChanger(selectedValue);
+        });
+      });
+
+      // Your function to execute when radio button selection changes
+      function themeChanger(selectedValue) {
+        switch (selectedValue) {
+          case 'themeWater':
+            document.body.style.backgroundImage = "url('waterfall.gif')";
+            workColor = "#1f235d";
+            breakColor = "#2B65A1";
+            redWave = 35;
+            greenWave = 181;
+            blueWave = 211;
+            colorSetter();
+            break;
+          case 'themeDiner':
+            document.body.style.backgroundImage = "url('diner.gif')";
+            workColor = "#350076";
+            breakColor = "#5a2250";
+            redWave = 141;
+            greenWave = 147;
+            blueWave = 189;
+            colorSetter();
+            break;
+          case 'themeSunset':
+            document.body.style.backgroundImage = "url('sunset.gif')";
+            workColor = "#ff6f61";
+            breakColor = "#ffcc5c";
+            redWave = 107;
+            greenWave = 0;
+            blueWave = 120;
+            colorSetter();
+            break;
+          case 'themeTechno':
+            document.body.style.backgroundImage = "url('techno.gif')";
+            workColor = "#81004d";
+            breakColor = "#ff1b4e";
+            redWave = 255;
+            greenWave = 0;
+            blueWave = 190;
+            colorSetter();
+            break;
+          default:
+            document.body.style.backgroundImage = "url('waterfall.gif')";
+            break;
+        }
+
+      }
+
+      function colorSetter(){
+        document.getElementById("safeTimerDisplay").style.color = workColor;
+        if(currentTimerType == 'break'){
+          document.getElementById("safeTimerDisplay").style.color = breakColor;
+        }
+        document.getElementById("safeTimerInputStudy").style.color = workColor;
+        document.getElementById("safeTimerInputBreak").style.color = breakColor;
+        document.getElementById("TimerButton").style.backgroundColor = breakColor;
+        document.getElementById("ResetButton").style.backgroundColor = breakColor;
+
+        let useElements = document.querySelectorAll(".parallax > use");
+        let rgbaValues = ["rgba("+redWave+", "+greenWave+", "+blueWave+", 0.5)", "rgba("+redWave+", "+greenWave+", "+blueWave+", 0.3)", "rgba("+redWave+", "+greenWave+", "+blueWave+", 0.1)", "rgba("+redWave+", "+greenWave+", "+blueWave+", 0.7)"];
+        useElements.forEach((useElement, index) => {
+            useElement.setAttribute("fill", rgbaValues[index]);
+        });
+        
+        document.getElementById("whiteBox").style.backgroundColor = "rgba("+redWave+", "+greenWave+", "+blueWave+", 0.9)";
+      }
   </script>
   
   </body>

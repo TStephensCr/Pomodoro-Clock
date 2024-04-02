@@ -1,17 +1,6 @@
 to do
 
-make input, timer and button look nice
-add option to change background(with relative wave color change)
-add js for break timer
-timer for pause and for study are different hues of same color scheme, relative to theme
-add quick animation for reset button(water going down)
+-any improvement on graphic design, it is not my strong suit
+-add quick animation for reset button(water going down in 1 sec on button press)
+-add indicator for current cycle number
 
-
-
-color to change in theme:
-background gif(obviously)
-waves
-clock display(differentiate work/break)
-input box borders
-input box text(differentiate input and placeholder)
-buttons
