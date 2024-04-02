@@ -363,16 +363,14 @@ input[type="radio"]{
       // Theme selection
       const radioButtons = document.querySelectorAll('input[type="radio"][name="theme"]');
 
-      // Add event listener to each radio button
+      
       radioButtons.forEach(button => {
         button.addEventListener('change', function(event) {
-          // Get the value of the selected radio button
           const selectedValue = event.target.value;
           themeChanger(selectedValue);
         });
       });
 
-      // Your function to execute when radio button selection changes
       function themeChanger(selectedValue) {
         switch (selectedValue) {
           case 'themeWater':
