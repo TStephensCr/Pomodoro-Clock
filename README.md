@@ -1,4 +1,4 @@
-#Pomodoro Clock
+# Pomodoro Clock
 
 Submission for Tecnologie Web assignment 2024 UniBo. Pomodoro Clock for studying, loops between work timer and break timer. A JavaScript animation illustrates the timer progression. Multiple themes available.
 
