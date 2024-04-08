@@ -231,7 +231,7 @@ input[type="radio"]{
       let timer;
       let timeLeft;
       let isRunning = false;
-      let initialTime;
+      let initialTime = null;
       let currentTimerType = 'work'; // Indicates the current timer type ('work' or 'break')
       let cycleCount = 1; // Default cycle count
       let cycleNumberInput = document.getElementById("safeTimerInputCicles");
@@ -247,6 +247,9 @@ input[type="radio"]{
       let redWave = 35;
       let greenWave = 181;
       let blueWave = 211;
+      let workTime;
+      let breakTime;
+      let cycles;
 
       function startOrStop() {
         if (isRunning) {
@@ -256,10 +259,11 @@ input[type="radio"]{
             TimerButton.innerHTML = "Resume Timer";
             wavesStart = parseFloat(document.getElementById("wavesID").style.top);
         } else {
-            let workTime = safeTimerInputStudy.value.trim();
-            let breakTime = safeTimerInputBreak.value.trim();
-            let cycles = parseInt(cycleNumberInput.value);
-
+            if (document.getElementById("TimerButton").innerHTML == 'Start Timer'){
+              workTime = safeTimerInputStudy.value.trim();
+              breakTime = safeTimerInputBreak.value.trim();
+              cycles = parseInt(cycleNumberInput.value);
+            }
             if (workTime === '' || breakTime === '' || isNaN(cycles) || cycles <= 0) {
                 alert("Please enter valid values for work time, break time, and number of cycles.");
                 return;
@@ -279,8 +283,8 @@ input[type="radio"]{
               smoothChange("whiteBox", (wavesStart + 10), 10, timeLeft * 1000);
             }else{
               document.getElementById("safeTimerDisplay").style.color = breakColor;
-              smoothChange("wavesID", 0, wavesStart, timeLeft * 1000);
-              smoothChange("whiteBox", 10, (wavesStart + 10), timeLeft * 1000);
+              smoothChange("wavesID", wavesStart, 90, timeLeft * 1000);
+              smoothChange("whiteBox", (wavesStart + 10), 100, timeLeft * 1000);
             }
 
             timer = setInterval(() => {
@@ -294,13 +298,17 @@ input[type="radio"]{
                       currentTimerType = 'break';
                       timeLeft = breakTime * 60;
                       initialTime = timeLeft;
+                      wavesStart = 0;
                       startOrStop(); // Start break timer automatically
                   } else {
                     if (cycleCount > 0) {
                       currentTimerType = 'work';
                       timeLeft = workTime * 60;
                       initialTime = timeLeft;
+                      wavesStart = 90;
                       startOrStop(); // Start work timer automatically
+                    }else{
+                      resetTimer();
                     }
                   }
               }
